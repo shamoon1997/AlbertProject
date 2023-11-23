@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RacingAPI.DBContext;
 using RacingAPI.Dtos;
 using RacingAPI.Dtos.Driver;
@@ -110,18 +111,19 @@ namespace RacingAPI.Controllers
 
 
         [HttpGet("Get")]
-        public ActionResult Get()
+        public ActionResult Get(string search)
         {
             return CreateHttpResponse(() =>
             {
-                var drivers = _context.Drivers.Select(c => new GetDriverDto
-                {
-                    ID = c.ID,
-                    Name = c.Name,
-                    Age = c.Age,
-                    Nationality = c.Nationality,
-                    Image = c.Image
-                })
+                var drivers = _context.Drivers.Where(c => String.IsNullOrEmpty(search) || EF.Functions.Like(c.Name, $"%{search}%"))
+                        .Select(c => new GetDriverDto
+                        {
+                            ID = c.ID,
+                            Name = c.Name,
+                            Age = c.Age,
+                            Nationality = c.Nationality,
+                            Image = c.Image
+                        })
                         .ToList();
 
                 drivers.ForEach(c =>
